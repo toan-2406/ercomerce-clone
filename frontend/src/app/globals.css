@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #D70018;
+  --ui-primary: #E45464;
+  --secondary: #FFD700;
+  --accent: #FE6271;
+  --bg-gray: #F4F4F4;
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
