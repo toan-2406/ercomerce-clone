@@ -4,7 +4,6 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -13,6 +12,26 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+
+    /* ============ STRICT MODE (Team Scaling) ============ */
+    "strict": true,                        // Bật tất cả các chế độ strict
+    "noImplicitAny": true,                 // Không cho phép any ngầm định
+    "strictNullChecks": true,              // Kiểm tra null/undefined nghiêm ngặt
+    "strictFunctionTypes": true,           // Kiểm tra kiểu hàm nghiêm ngặt
+    "strictBindCallApply": true,           // Kiểm tra bind/call/apply
+    "strictPropertyInitialization": true,  // Thuộc tính class phải khởi tạo
+    "noImplicitThis": true,                // Không cho phép this ngầm định
+    "useUnknownInCatchVariables": true,    // Catch variable là unknown thay vì any
+    "alwaysStrict": true,                  // Đảm bảo "use strict" trong mọi file
+
+    /* ============ CODE QUALITY ============ */
+    "noUnusedLocals": true,                // Báo lỗi biến cục bộ không sử dụng
+    "noUnusedParameters": true,            // Báo lỗi tham số không sử dụng
+    "noImplicitReturns": true,             // Hàm phải có return rõ ràng
+    "noFallthroughCasesInSwitch": true,    // Không cho phép case fall-through
+    "noUncheckedIndexedAccess": true,      // Truy cập mảng/object phải check undefined
+    "exactOptionalPropertyTypes": true,    // Thuộc tính optional không nhận undefined ngầm
+
     "plugins": [
       {
         "name": "next"

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Husky commit-msg hook
+# Kiểm tra message commit theo chuẩn Conventional Commits
+
+npx --no -- commitlint --edit $1

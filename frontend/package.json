@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.14",
@@ -17,13 +22,27 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "src/**/*.{css,json,md}": [
+      "prettier --write"
+    ]
   }
 }
