@@ -3,29 +3,38 @@ import { ProductsRepository } from './products.repository';
 
 @Injectable()
 export class ProductsService {
-    private readonly logger = new Logger(ProductsService.name);
+  private readonly logger = new Logger(ProductsService.name);
 
-    constructor(private readonly productsRepository: ProductsRepository) { }
+  constructor(private readonly productsRepository: ProductsRepository) { }
 
-    async findAll() {
-        return this.productsRepository.find();
+  async findAll() {
+    return this.productsRepository.find();
+  }
+
+  async findOne(idOrSlug: string) {
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(idOrSlug);
+    if (isObjectId) {
+      const product = await this.productsRepository.findById(idOrSlug);
+      if (product) return product;
     }
+    return this.productsRepository.findOne({ slug: idOrSlug });
+  }
 
-    async findOne(id: string) {
-        return this.productsRepository.findById(id);
-    }
+  async findBySlug(slug: string) {
+    return this.productsRepository.findOne({ slug });
+  }
 
-    async findByCategory(category: string) {
-        return this.productsRepository.find({ category });
-    }
+  async findByCategory(category: string) {
+    return this.productsRepository.find({ category });
+  }
 
-    async search(query: string) {
-        // Using text search if defined in schema, or regex
-        return this.productsRepository.find({
-            $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { category: { $regex: query, $options: 'i' } }
-            ]
-        });
-    }
+  async search(query: string) {
+    // Using text search if defined in schema, or regex
+    return this.productsRepository.find({
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } },
+      ],
+    });
+  }
 }

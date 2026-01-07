@@ -1,177 +1,123 @@
-# Tài liệu Kiến trúc Frontend - CellphoneS Clone
+# Tài liệu Kiến trúc Frontend (Frontend Architecture Documentation)
 
-Tài liệu này giải thích các cấu trúc, mẫu thiết kế (patterns) và kỹ thuật được sử dụng trong việc tái cấu trúc hệ thống Frontend của dự án.
+> **Dự án**: CellphoneS Clone  
+> **Phiên bản**: 2.0  
+> **Cập nhật lần cuối**: 29/12/2025
 
 ---
 
-## 1. Cấu trúc Thư mục (Project Structure)
+## 📑 Mục lục (Table of Contents)
 
-Dự án tuân thủ cấu trúc thư mục hiện đại của Next.js kết hợp với các nguyên tắc quản lý mã nguồn sạch.
+1. [Giới thiệu chung](#1-giới-thiệu-chung)
+2. [Cấu trúc Thư mục](#2-cấu-trúc-thư-mục-project-structure)
+3. [Mẫu Thiết kế & Kỹ thuật Chủ đạo](#3-mẫu-thiết-kế--kỹ-thuật-chủ-đạo-core-patterns)
+4. [Quy chuẩn Đặt tên](#4-quy-chuẩn-đặt-tên-naming-conventions)
+5. [Lộ trình Mở rộng (Scaling Roadmap)](#5-lộ-trình-mở-rộng-team-scaling)
+6. [Hệ thống Đảm bảo Chất lượng (Quality Assurance)](#6-hệ-thống-đảm-bảo-chất-lượng-qa-checks)
+
+---
+
+## 1. Giới thiệu chung
+
+Tài liệu này quy định các chuẩn mực về kiến trúc, tổ chức mã nguồn và quy trình phát triển cho hệ thống Frontend. Mục tiêu nhằm đảm bảo tính nhất quán, khả năng bảo trì và khả năng mở rộng khi quy mô team phát triển lên tới 5+ thành viên.
+
+## 2. Cấu trúc Thư mục (Project Structure)
+
+Dự án sử dụng Next.js App Router với kiến trúc **Feature-based** kết hợp **Atomic Design**.
 
 ```text
 src/
-├── app/             # Next.js App Router (Pages, Layouts, Route Groups)
-├── components/      # UI Components (Atomic Design)
-│   ├── atoms/       # Các thành phần nhỏ nhất (Button, Input, Icon)
-│   ├── molecules/   # Kết hợp từ các atoms (ProductCard, SearchBar)
-│   ├── organisms/   # Các khối chức năng phức tạp (Header, Footer, Sidebar)
-│   └── templates/   # Layout cục bộ cho các trang
-├── config/          # Cấu hình hệ thống (Environment variables)
-├── constants/       # Hằng số hệ thống (Routes, Storage Keys, Order Status)
-├── context/         # React Context (Auth, Cart)
-├── hooks/           # Custom React Hooks (TanStack Query hooks)
-├── lib/             # Thư viện dùng chung (API Axios client)
-│   └── api/         # Các service gọi API
-├── providers/       # Các Provider bọc ngoài ứng dụng (React Query, Auth)
-└── types/           # Định nghĩa TypeScript (Interfaces, Types)
+├── app/                  # App Router: Xử lý Routing, Layout, cấu hình page
+│   ├── (auth)/           # Route Group: Authentication (Login, Register)
+│   ├── (dashboard)/      # Route Group: Dashboard (Admin, Account)
+│   └── ...
+├── components/           # UI Library: Tuân thủ Atomic Design
+│   ├── atoms/            # Tầng 1: Button, Input, Icon, Banner
+│   ├── molecules/        # Tầng 2: ProductCard, SearchBar, FormField
+│   ├── organisms/        # Tầng 3: Header, Footer, HeroSlider, ProductList
+│   └── templates/        # Tầng 4: Page Layouts
+├── config/               # Configuration: Environment vars (API_URL, Timeout)
+├── constants/            # Constants: Routes, Regex, Order Status
+├── context/              # Global State: AuthContext, CartContext
+├── hooks/                # Logic Reuse: Custom Hooks (useOrders, useAuth)
+├── lib/                  # Core Libraries: Axios Client, Utils
+│   └── api/              # API Services layer
+├── providers/            # Providers: React Query Provider, Theme Provider
+└── types/                # TypeScript Definitions: Interfaces, Enums
 ```
 
----
+## 3. Mẫu Thiết kế & Kỹ thuật Chủ đạo (Core Patterns)
 
-## 2. Các Mẫu Thiết kế & Kỹ thuật Chủ đạo
+### 3.1. Atomic Design System
+Phân chia UI thành các tầng kế thừa để tối đa hóa tái sử dụng:
+*   **Nguyên tắc**: `Atom` (nhỏ nhất, không logic) -> `Molecule` (kết hợp Atom, logic UI) -> `Organism` (khối chức năng hoàn chỉnh, logic nghiệp vụ).
 
-### 2.1. Atomic Design
-Chúng ta chia nhỏ UI thành các cấp độ để tăng khả năng tái sử dụng và bảo trì:
-- **Atoms**: Đảm bảo tính nhất quán của thiết kế từ những phần nhỏ nhất.
-- **Molecules/Organisms**: Giúp xây dựng giao diện phức tạp từ các module đã có.
+### 3.2. Centralized API Client (Axios)
+Sử dụng Singleton Design Pattern cho HTTP Client (`src/lib/api/axios-client.ts`):
+*   **Interceptor Request**: Tự động inject `Bearer Token` từ Storage vào Header.
+*   **Interceptor Response**:
+    *   Trích xuất data (`response.data`) giúp service layer gọn gàng.
+    *   Tự động logout khi gặp lỗi `401 Unauthorized`.
+    *   Xử lý lỗi mạng/server tập trung.
 
-### 2.2. API Layer với Axios Interceptors
-Thay vì dùng `fetch` rời rạc, chúng ta sử dụng một `axios-client` tập trung:
-- **Request Interceptor**: Tự động đính kèm JWT Token từ `localStorage` vào mọi yêu cầu.
-- **Response Interceptor**: 
-    - Xử lý lỗi tập trung (401, 403, 500).
-    - **Auto-logout**: Tự động đăng xuất và xóa dữ liệu khi token hết hạn (lỗi 401).
-    - Trích xuất dữ liệu (`response.data`) giúp code ở tầng service gọn hơn.
+### 3.3. State Management Strategy
+*   **Server State**: Sử dụng **TanStack Query (React Query)** để caching, polling, và synchronization dữ liệu backend.
+*   **Client State**: Sử dụng **React Context** cho các state toàn cục nhẹ (Auth, Cart UI).
+*   **Local State**: `useState`, `useReducer` cho logic tại component cục bộ.
 
-### 2.3. Quản lý Trạng thái (State Management)
-- **TanStack Query (React Query)**: Dùng để quản lý "Server State" (dữ liệu từ API). Hỗ trợ caching, loading state, và tự động fetch lại dữ liệu.
-- **React Context**: Dùng cho "Global UI State" đơn giản như thông tin đăng nhập (`AuthContext`) và giỏ hàng (`CartContext`).
-- **Zustand (Tùy chọn)**: Có thể dùng cho các logic phức tạp hơn nếu cần.
+### 3.4. Defensive Programming
+*   **Strict Null Checks**: Luôn kiểm tra sự tồn tại của dữ liệu (vd: `user?.id`) thay vì truy cập trực tiếp.
+*   **Fallback UI**: Luôn có trạng thái `Loading` và `Error` cho mọi tác vụ async.
+*   **Type Safety**: Không sử dụng `any`, định nghĩa Type/Interface rõ ràng cho mọi API Response và Props.
 
-### 2.4. Route Groups (Next.js)
-Sử dụng các thư mục trong ngoặc đơn như `(auth)` và `(dashboard)`:
-- Giúp tổ chức file sạch sẽ mà không ảnh hưởng đến URL.
-- Cho phép áp dụng các `layout.tsx` khác nhau cho từng nhóm trang (VD: trang Admin có sidebar khác trang Login).
+## 4. Quy chuẩn Đặt tên (Naming Conventions)
 
-### 2.5. Centralized Constants & Configuration
-- Mọi đường dẫn (URL) đều khai báo trong `ROUTES`.
-- Mọi key lưu trữ đều nằm trong `STORAGE_KEYS`.
-=> Giúp việc thay đổi dễ dàng, tránh lỗi "Magic String" (viết sai tên chuỗi gây lỗi logic).
+| Đối tượng | Quy tắc | Ví dụ |
+| :--- | :--- | :--- |
+| **File / Folder** | `kebab-case` | `user-profile.tsx`, `auth-provider.ts` |
+| **Component** | `PascalCase` | `ProductCard`, `MainHeader` |
+| **Function / Variable** | `camelCase` | `handleLogin`, `isFetching` |
+| **Constant / Enum** | `UPPER_SNAKE_CASE` | `API_TIMEOUT`, `ORDER_STATUS` |
+| **Interface / Type** | `PascalCase` | `User`, `ProductResponse` |
 
-### 2.6. Defensive Coding & Type Safety
-- **Strict Typing**: Mọi dữ liệu đều được định nghĩa interface trong `src/types`.
-- **Optional Chaining (`?.`)**: Luôn sử dụng khi truy cập thuộc tính của object từ API để tránh lỗi "Cannot read property of undefined".
-- **Nullish Coalescing (`??`)**: Cung cấp giá trị mặc định khi dữ liệu bị trống.
+## 5. Lộ trình Mở rộng (Team Scaling)
 
-### 2.7. Middleware
-Thiết lập file `middleware.ts` để:
-- Kiểm soát truy cập ở mức server.
-- Bảo vệ các đường dẫn nhạy cảm như `/admin`, `/account`.
-- Hiện tại đang ở bước chuẩn bị (sẵn sàng chuyển sang dùng Cookie thay cho LocalStorage để tăng tính bảo mật).
+Chiến lược phát triển dành cho team 5+ Devs, tập trung vào tính kỷ luật và bảo mật.
 
----
+### ✅ Giai đoạn 1: Chuẩn hóa Code (Đã hoàn thành)
+Thiết lập hàng rào kỹ thuật để ngăn chặn "bad code" lọt vào repo.
 
-## 3. Quy tắc đặt tên (Naming Convention)
-- **Files/Folders**: Luôn sử dụng `kebab-case` (ví dụ: `product-card.tsx`, `auth-context.tsx`).
-- **Components**: Sử dụng `PascalCase` (ví dụ: `Header`, `ProductDetail`).
-- **Constants**: Sử dụng `UPPER_SNAKE_CASE` (ví dụ: `API_URL`, `AUTH_TOKEN`).
+*   **TypeScript Strict Mode**: Kích hoạt `strict: true` cùng hàng loạt rules kiểm tra nghiêm ngặt trong `tsconfig.json`.
+*   **Husky & Lint-staged**:
+    *   `pre-commit`: Chạy ESLint + Prettier chỉ trên các file thay đổi (staged).
+    *   `commit-msg`: Validate message theo chuẩn **Conventional Commits**.
+*   **Conventional Commits**:
+    *   `feat`: Tính năng mới
+    *   `fix`: Sửa lỗi
+    *   `refactor`: Tái cấu trúc (không đổi logic)
+    *   `style`: Format, CSS
+    *   `docs`: Tài liệu
 
----
+### 🚀 Giai đoạn 2: Security & Performance (Q1/2026)
+*   **Authentication**: Chuyển từ `localStorage` sang **HttpOnly Cookies** để bảo mật (chống XSS) và hỗ trợ SSR.
+*   **Middleware**: Implement Next.js Middleware để filter request độc hại và phân quyền Role-based mạnh mẽ hơn.
 
-## 4. Lộ trình mở rộng & Ưu tiên cho Team (Scaling)
+### 🛡️ Giai đoạn 3: Quality Assurance (Q2/2026)
+*   **Unit Test**: Viết test với Jest/Vitest cho các hàm logic nghiệp vụ quan trọng (tính giá, utils).
+*   **E2E Test**: Sử dụng Playwright để test tự động các luồng người dùng chính (Checkout, Payment).
+*   **Monitoring**: Tích hợp Sentry để bắt lỗi realtime trên Production.
 
-Để dự án có thể vận hành tốt khi quy mô nhân sự lên tới 5 người, chúng ta đặt ra các ưu tiên sau:
+## 6. Hệ thống Đảm bảo Chất lượng (QA Checks)
 
-### 4.1. Ưu tiên 1: Chuẩn hóa chất lượng Code (Code Quality) ✅ ĐÃ CẤU HÌNH
+Mọi Pull Request (PR) cần phải vượt qua các checklist sau trước khi Merge:
 
-#### 4.1.1. TypeScript Strict Mode
-File `tsconfig.json` đã được nâng cấp lên chế độ nghiêm ngặt nhất:
-
-| Tùy chọn | Mô tả |
-|----------|-------|
-| `strict: true` | Bật tất cả các chế độ strict |
-| `noImplicitAny` | Không cho phép biến có kiểu `any` ngầm định |
-| `strictNullChecks` | Kiểm tra `null`/`undefined` nghiêm ngặt |
-| `noUnusedLocals` | Báo lỗi nếu có biến cục bộ không sử dụng |
-| `noUnusedParameters` | Báo lỗi nếu có tham số hàm không sử dụng |
-| `noImplicitReturns` | Hàm phải có `return` rõ ràng ở mọi nhánh |
-| `noUncheckedIndexedAccess` | Truy cập mảng/object phải check `undefined` |
-
-#### 4.1.2. Husky & Lint-staged
-Đã cấu hình Git Hooks để tự động kiểm tra code trước khi commit:
-
-```text
-.husky/
-├── pre-commit      # Chạy lint-staged (ESLint + Prettier)
-└── commit-msg      # Kiểm tra format commit message
-```
-
-**Cách hoạt động:**
-1. Developer chạy `git commit -m "feat: add cart"`
-2. **pre-commit hook** tự động chạy:
-   - ESLint kiểm tra lỗi syntax/logic
-   - Prettier tự động format code
-3. **commit-msg hook** kiểm tra message:
-   - Phải theo chuẩn: `type: subject`
-   - Ví dụ hợp lệ: `feat: add cart logic`, `fix: header UI bug`
-
-#### 4.1.3. Conventional Commits
-Quy tắc đặt tên commit để dễ dàng theo dõi lịch sử thay đổi:
-
-| Loại | Mô tả | Ví dụ |
-|------|-------|-------|
-| `feat` | Tính năng mới | `feat: add product review` |
-| `fix` | Sửa lỗi | `fix: cart total calculation` |
-| `docs` | Cập nhật tài liệu | `docs: update README` |
-| `style` | Format code (không đổi logic) | `style: fix indentation` |
-| `refactor` | Tái cấu trúc code | `refactor: extract utils` |
-| `perf` | Cải thiện hiệu năng | `perf: optimize image loading` |
-| `test` | Thêm/sửa test | `test: add unit test for cart` |
-| `chore` | Công việc vặt | `chore: update dependencies` |
-
-#### 4.1.4. Cách cài đặt (Dành cho Developer mới)
-```bash
-# 1. Cài đặt dependencies
-npm install
-
-# 2. Husky sẽ tự động được cài đặt qua script "prepare"
-# Nếu chưa, chạy thủ công:
-npx husky install
-
-# 3. Kiểm tra lint
-npm run lint
-
-# 4. Format code
-npm run format
-```
+1.  **Lint Check**: `npm run lint` (Không còn warning/error).
+2.  **Type Check**: `npm run type-check` (Không lỗi TypeScript).
+3.  **Format**: `npm run format` (Code style tươm tất).
+4.  **Conventional Commits**: Message đúng chuẩn `feat:`, `fix:`, ...
 
 ---
 
-### 4.2. Ưu tiên 2: Cải thiện Bảo mật & SSR (Auth & SEO)
-- **Cookie-based Auth (HttpOnly)**: Chuyển đổi từ `localStorage` sang lưu Token ở Cookie. 
-    - **Lý do**: Tăng tính bảo mật (hạn chế tấn công XSS) và cho phép Next.js Middleware kiểm tra quyền truy cập ngay ở tầng server (SSR), giúp tối ưu SEO và trải nghiệm người dùng (tránh tình trạng "jump" giao diện).
-- **Next-Auth optimization**: Chuẩn hóa luồng Login/Register để hỗ trợ các tính năng nâng cao như Social Login trong tương lai.
-
-### 4.3. Ưu tiên 3: Kiểm thử & Giám sát (Testing & Monitoring)
-- **Unit Testing**: Viết test cho các nghiệp vụ lõi (vd: logic tính giá, thuế, phí vận chuyển) để đảm bảo không bị lỗi khi refactor code.
-- **E2E Testing (Playwright)**: Test tự động các luồng quan trọng nhất (Mua hàng -> Thanh toán) để đảm bảo doanh thu không bị ảnh hưởng bởi bug UI.
-- **Error Tracking (Sentry)**: Tự động ghi lại lỗi từ phía người dùng để team có thể fix bug trước khi khách hàng phàn nàn.
-
----
-
-## 5. Các file cấu hình quan trọng
-
-| File | Mục đích |
-|------|----------|
-| `tsconfig.json` | Cấu hình TypeScript strict mode |
-| `.prettierrc` | Quy tắc format code (dấu chấm phẩy, ngoặc kép, độ rộng dòng) |
-| `commitlint.config.js` | Quy tắc đặt tên commit message |
-| `.husky/pre-commit` | Hook chạy lint trước khi commit |
-| `.husky/commit-msg` | Hook kiểm tra commit message |
-| `package.json > lint-staged` | Cấu hình lint cho các file staged |
-
----
-
-*Tài liệu này giúp các thành viên mới nắm bắt nhanh kiến trúc và duy trì tính nhất quán của mã nguồn.*
-
-*Cập nhật lần cuối: 29/12/2024*
+> **Lưu ý cho Dev mới**:
+> *   Chạy `npm install` ngay khi pull code về để cài đặt Husky hooks.
+> *   Đọc kỹ file `package.json` để biết các script có sẵn.

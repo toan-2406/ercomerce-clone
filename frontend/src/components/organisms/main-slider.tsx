@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const banners = [
     "https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/iphone-16-pro-max-km-moi-banner-home.jpg",
@@ -7,7 +7,7 @@ const banners = [
     "https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/banner-thu-cu-doi-moi-home.png"
 ];
 
-export default function mainSlider() {
+export default function MainSlider() {
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {

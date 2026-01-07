@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import axiosClient from '@/lib/api/axios-client';
 import { ROUTES } from '@/constants';
+import { User } from '@/types';
 
 export default function LoginPage() {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -14,17 +15,18 @@ export default function LoginPage() {
     const router = useRouter();
     const { login } = useAuth();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            const data: any = await axiosClient.post('/auth/login', { phoneNumber, password });
-            login(data.access_token, data.user);
+            const user = await axiosClient.post<User>('/auth/login', { phoneNumber, password }) as unknown as User;
+            login(user);
             router.push(ROUTES.HOME);
-        } catch (err: any) {
-            setError(err.message || 'Đăng nhập thất bại');
+        } catch (err: unknown) {
+            const errorObj = err as { message?: string };
+            setError(errorObj.message || 'Đăng nhập thất bại');
         } finally {
             setLoading(false);
         }
@@ -94,11 +96,11 @@ export default function LoginPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <button type="button" className="flex items-center justify-center gap-2 border border-gray-200 py-2.5 rounded-xl hover:bg-gray-50 transition-all">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" className="h-5" />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" className="h-5" alt="Google" />
                             <span className="text-xs font-bold">Google</span>
                         </button>
                         <button type="button" className="flex items-center justify-center gap-2 border border-gray-200 py-2.5 rounded-xl hover:bg-gray-50 transition-all">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Zalo_logo.svg/2048px-Zalo_logo.svg.png" className="h-5" />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Zalo_logo.svg/2048px-Zalo_logo.svg.png" className="h-5" alt="Zalo" />
                             <span className="text-xs font-bold">Zalo</span>
                         </button>
                     </div>

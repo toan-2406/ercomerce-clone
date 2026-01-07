@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/header';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';

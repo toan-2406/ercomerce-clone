@@ -5,6 +5,7 @@ import { useProductReviews, useReviewStats, useCreateReview } from '@/hooks/use-
 import { ROUTES } from '@/constants';
 import { Review } from '@/types';
 import Link from 'next/link';
+
 export default function ProductReviews({ productId }: { productId: string }) {
     const { user } = useAuth();
     const { data: reviews = [] } = useProductReviews(productId);
@@ -16,11 +17,12 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user) return;
+        const userId = user?.id || user?._id;
+        if (!user || !userId) return;
 
         createReview.mutate({
-            userId: user.id || user._id,
-            userFullName: user.fullName || user.phoneNumber,
+            userId: userId as string,
+            userFullName: user.fullName || user.phoneNumber || 'Người dùng',
             productId,
             rating: newReview.rating,
             comment: newReview.comment

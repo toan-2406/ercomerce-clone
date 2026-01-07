@@ -20,4 +20,6 @@ export const ROUTES = {
     ADMIN: '/admin',
     CART: '/cart',
     CHECKOUT: '/checkout',
+    NEWS: '/news',
+    MY_ORDERS: '/account/orders',
 };

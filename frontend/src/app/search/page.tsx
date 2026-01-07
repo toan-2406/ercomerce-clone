@@ -1,39 +1,29 @@
 "use client";
 
 import Header from "@/components/organisms/header";
-import { useEffect, useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axiosClient from "@/lib/api/axios-client";
 import ProductCard from "@/components/molecules/product-card";
 import { Product } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 function SearchContent() {
     const searchParams = useSearchParams();
-    const query = searchParams.get('q');
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const query = searchParams.get('q') || '';
 
-    useEffect(() => {
-        if (query) {
-            setLoading(true);
-            axiosClient.get(`/products/search?q=${query}`)
-                .then((data: any) => {
-                    setProducts(data);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error searching products:", err);
-                    setLoading(false);
-                });
-        }
-    }, [query]);
+    const { data: products = [], isLoading: loading } = useQuery<Product[]>({
+        queryKey: ['products', 'search', query],
+        queryFn: () => axiosClient.get(`/products/search?q=${query}`),
+        enabled: !!query
+    });
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
             <main className="container py-8">
                 <h1 className="text-xl font-bold mb-6">
-                    Kết quả tìm kiếm cho: <span className="text-red-600">"{query}"</span>
+                    Kết quả tìm kiếm cho: <span className="text-red-600">&quot;{query}&quot;</span>
                     {loading ? '' : ` (${products?.length || 0} sản phẩm)`}
                 </h1>
 

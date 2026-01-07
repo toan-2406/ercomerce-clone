@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import axiosClient from '@/lib/api/axios-client';
 import { ROUTES } from '@/constants';
+import { User } from '@/types';
 
 export default function RegisterPage() {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     const router = useRouter();
     const { login } = useAuth();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
 
@@ -28,11 +29,12 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const data: any = await axiosClient.post('/auth/register', { phoneNumber, password, fullName });
-            login(data.access_token, data.user);
+            const user = await axiosClient.post<User>('/auth/register', { phoneNumber, password, fullName }) as unknown as User;
+            login(user);
             router.push(ROUTES.HOME);
-        } catch (err: any) {
-            setError(err.message || 'Đăng ký thất bại');
+        } catch (err: unknown) {
+            const errorObj = err as { message?: string };
+            setError(errorObj.message || 'Đăng ký thất bại');
         } finally {
             setLoading(false);
         }

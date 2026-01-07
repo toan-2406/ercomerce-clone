@@ -1,32 +1,66 @@
-import { Controller, Post, Body, Get, Param, Put, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles, UserRole } from '../../common/decorators/roles.decorator';
 
 @Controller('orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
-    constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) { }
 
-    @Post()
-    create(@Body() createOrderDto: any) {
-        return this.ordersService.create(createOrderDto);
+  @Post()
+  async create(@Req() req, @Body() createOrderDto: any) {
+    if (!req.user || !req.user.userId) {
+      throw new Error('User not authenticated');
+    }
+    // Ensure the order is created for the logged-in user
+    return this.ordersService.create({
+      ...createOrderDto,
+      userId: req.user.userId,
+    });
+  }
+
+  @Get()
+  @Roles(UserRole.ADMIN)
+  async findAll() {
+    return this.ordersService.findAll();
+  }
+
+  @Get('my-orders')
+  async findMyOrders(@Req() req) {
+    if (!req.user || !req.user.userId) {
+      throw new Error('User not authenticated');
+    }
+    return this.ordersService.findByUserId(req.user.userId);
+  }
+
+  @Get('user/:userId')
+  @Roles(UserRole.ADMIN)
+  async findByUserId(@Param('userId') userId: string) {
+    return this.ordersService.findByUserId(userId);
+  }
+
+  @Get(':id')
+  async findOne(@Req() req, @Param('id') id: string) {
+    const order = await this.ordersService.findOne(id);
+    if (!order) {
+      throw new Error('Order not found');
     }
 
-    @Get()
-    findAll() {
-        return this.ordersService.findAll();
-    }
+    // Only admin or the owner can view the order
+    const userIdStr = order.userId.toString();
+    const currentUserIdStr = req.user.userId.toString();
 
-    @Get('user/:userId')
-    findByUserId(@Param('userId') userId: string) {
-        return this.ordersService.findByUserId(userId);
+    if (req.user.role !== UserRole.ADMIN && userIdStr !== currentUserIdStr) {
+      throw new Error('Unauthorized access to order');
     }
+    return order;
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.ordersService.findOne(id);
-    }
-
-    @Patch(':id/status')
-    updateStatus(@Param('id') id: string, @Body('status') status: string) {
-        return this.ordersService.updateStatus(id, status);
-    }
+  @Patch(':id/status')
+  @Roles(UserRole.ADMIN)
+  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.ordersService.updateStatus(id, status);
+  }
 }

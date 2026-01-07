@@ -8,7 +8,6 @@ import ProductCard from "@/components/molecules/product-card";
 import { useQuery } from '@tanstack/react-query';
 import axiosClient from "@/lib/api/axios-client";
 import { Product } from "@/types";
-import { ROUTES } from "@/constants";
 
 export default function Home() {
   const { data: products = [], isLoading: loading } = useQuery<Product[]>({
@@ -70,7 +69,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {products?.length > 0 ? products.map(product => (
+                {products?.length > 0 ? products.map((product: Product) => (
                   <ProductCard key={product?._id} product={product} />
                 )) : (
                   <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl">

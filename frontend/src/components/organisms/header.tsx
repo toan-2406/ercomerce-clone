@@ -96,7 +96,13 @@ export default function Header() {
                                 <Link href={ROUTES.ACCOUNT} className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-100 flex items-center gap-2 no-underline text-gray-800 border-b border-gray-50">
                                     👤 Xem trang cá nhân
                                 </Link>
-                                <button onClick={logout} className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-100 flex items-center gap-2">
+                                <Link href={ROUTES.MY_ORDERS} className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-100 flex items-center gap-2 no-underline text-gray-800 border-b border-gray-50">
+                                    📦 Đơn hàng của tôi
+                                </Link>
+                                <Link href={ROUTES.NEWS} className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-100 flex items-center gap-2 no-underline text-gray-800 border-b border-gray-50">
+                                    📰 Tin tức công nghệ
+                                </Link>
+                                <button onClick={logout} className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-100 flex items-center gap-2 text-red-600">
                                     🚪 Thoát tài khoản
                                 </button>
                             </div>

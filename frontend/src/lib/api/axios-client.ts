@@ -8,15 +8,13 @@ const axiosClient: AxiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // Send cookies with requests
 });
 
 // Request Interceptor
 axiosClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) : null;
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+        // No need to manually attach token with cookies
         return config;
     },
     (error: AxiosError) => {
@@ -28,8 +26,8 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     (response) => {
         const res = response.data;
-        // Standardized backend response format: { success: boolean, data: any }
-        if (res && typeof res === 'object' && 'success' in res) {
+        // Automatically extract data if wrapped by TransformInterceptor
+        if (res && typeof res === 'object' && res.success === true && 'data' in res) {
             return res.data;
         }
         return res;
@@ -38,14 +36,13 @@ axiosClient.interceptors.response.use(
         // Handle common errors like 401, 403, 500
         if (error.response) {
             const status = error.response.status;
-            const data = error.response.data as any;
+            const data = error.response.data as Record<string, unknown>;
 
             if (status === 401) {
                 // Auto logout if 401 Unauthorized
                 if (typeof window !== 'undefined') {
-                    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
                     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
-                    // Optional: window.location.href = ROUTES.LOGIN;
+                    // location.href = ROUTES.LOGIN; // Optional redirect
                 }
             }
 

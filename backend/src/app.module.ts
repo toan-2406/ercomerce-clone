@@ -11,6 +11,8 @@ import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CartModule } from './modules/cart/cart.module';
+import { NewsModule } from './modules/news/news.module';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
@@ -29,6 +31,8 @@ import { ConfigService } from '@nestjs/config';
     OrdersModule,
     ReviewsModule,
     CategoriesModule,
+    CartModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

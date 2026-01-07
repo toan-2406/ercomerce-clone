@@ -2,12 +2,12 @@
 
 import Header from "@/components/organisms/header";
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import axiosClient from "@/lib/api/axios-client";
 import ProductCard from "@/components/molecules/product-card";
 import { Product } from "@/types";
 import { ROUTES } from "@/constants";
+import { useQuery } from "@tanstack/react-query";
 
 const categoryTitles: Record<string, string> = {
     'mobile': 'Điện thoại',
@@ -24,25 +24,15 @@ const categoryTitles: Record<string, string> = {
 
 export default function CategoryPage() {
     const { slug } = useParams();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const categorySlug = slug as string;
 
-    useEffect(() => {
-        if (slug) {
-            setLoading(true);
-            axiosClient.get(`/products/category/${slug}`)
-                .then((data: any) => {
-                    setProducts(data);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error fetching category products:", err);
-                    setLoading(false);
-                });
-        }
-    }, [slug]);
+    const { data: products = [], isLoading: loading } = useQuery<Product[]>({
+        queryKey: ['products', 'category', categorySlug],
+        queryFn: () => axiosClient.get(`/products/category/${categorySlug}`),
+        enabled: !!categorySlug
+    });
 
-    const title = categoryTitles[slug as string] || slug;
+    const title = categoryTitles[categorySlug] || categorySlug;
 
     return (
         <div className="min-h-screen bg-gray-50">

@@ -3,15 +3,15 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class BaseSchema extends Document {
-    @Prop({ default: false })
-    isDeleted: boolean;
+  @Prop({ default: false })
+  isDeleted: boolean;
 
-    @Prop()
-    deletedAt: Date;
+  @Prop()
+  deletedAt: Date;
 
-    @Prop({ type: Date, default: Date.now })
-    createdAt: Date;
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
 
-    @Prop({ type: Date, default: Date.now })
-    updatedAt: Date;
+  @Prop({ type: Date, default: Date.now })
+  updatedAt: Date;
 }

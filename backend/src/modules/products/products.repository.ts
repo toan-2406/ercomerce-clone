@@ -6,16 +6,14 @@ import { Product, ProductDocument } from './schemas/product.schema';
 
 @Injectable()
 export class ProductsRepository extends BaseRepository<ProductDocument> {
-    constructor(
-        @InjectModel(Product.name)
-        private readonly productModel: Model<ProductDocument>,
-    ) {
-        super(productModel);
-    }
+  constructor(
+    @InjectModel(Product.name)
+    private readonly productModel: Model<ProductDocument>,
+  ) {
+    super(productModel);
+  }
 
-    async findBySlug(slug: string): Promise<ProductDocument | null> {
-        return this.productModel
-            .findOne({ slug, isDeleted: false })
-            .exec();
-    }
+  async findBySlug(slug: string): Promise<ProductDocument | null> {
+    return this.productModel.findOne({ slug, isDeleted: false }).exec();
+  }
 }

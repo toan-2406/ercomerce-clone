@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/organisms/header';
 import { useAuth } from '@/context/auth-context';
 import { useCart } from '@/context/cart-context';
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         if (user) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData(prev => ({
                 ...prev,
                 fullName: user.fullName || '',
@@ -46,20 +47,22 @@ export default function CheckoutPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user) {
+        const userId = user?.id || user?._id;
+
+        if (!user || !userId) {
             alert("Vui lòng đăng nhập để đặt hàng");
             router.push(ROUTES.LOGIN);
             return;
         }
 
         const orderData = {
-            userId: user?.id || user?._id,
+            userId: userId as string,
             items: items.map(item => ({
-                productId: item?.id,
-                name: item?.name,
+                productId: item?.id || '',
+                name: item?.name || '',
                 price: item?.price || 0,
                 quantity: item?.quantity || 1,
-                image: item?.image
+                image: item?.image || ''
             })),
             totalPrice: totalPrice,
             shippingAddress: {
@@ -157,7 +160,7 @@ export default function CheckoutPage() {
                                 {items.map((item) => (
                                     <div key={item.id} className="flex gap-3">
                                         <div className="w-16 h-16 border rounded-lg p-1 flex-shrink-0">
-                                            <img src={item.image} className="w-full h-full object-contain" />
+                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
                                         </div>
                                         <div className="flex-grow">
                                             <p className="text-xs font-bold line-clamp-2">{item.name}</p>

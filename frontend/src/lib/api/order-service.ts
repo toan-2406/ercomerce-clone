@@ -10,6 +10,10 @@ export const orderService = {
         return axiosClient.get(`/orders/user/${userId}`);
     },
 
+    getMyOrders: async (): Promise<Order[]> => {
+        return axiosClient.get('/orders/my-orders');
+    },
+
     getAllOrders: async (): Promise<Order[]> => {
         return axiosClient.get('/orders');
     },
